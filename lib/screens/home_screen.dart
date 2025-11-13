@@ -31,27 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadTasks() async {
     final tasks = await _dbHelper.getTasks();
     setState(() {
-      if (tasks.isEmpty) {
-        _tasks = [
-          TaskItem(
-            title: 'Buy groceries',
-            priority: 'Medium',
-            description: 'Milk, eggs, bread',
-          ),
-          TaskItem(
-            title: 'Read notes',
-            priority: 'Low',
-            description: 'Review lecture notes',
-          ),
-          TaskItem(
-            title: 'Call tutor',
-            priority: 'High',
-            description: 'Discuss assignment 3',
-          ),
-        ];
-      } else {
-        _tasks = tasks;
-      }
+      _tasks = tasks;
     });
   }
 
@@ -80,22 +60,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Manage your tasks and quick notes',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                Switch(
-                  value: widget.isDarkMode,
-                  onChanged: (v) async {
-                    widget.onThemeChanged(v);
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setBool('isDarkMode', v);
-                  },
-                ),
-              ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Dark Theme'),
+              subtitle: Text(
+                'Manage your tasks and quick notes',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              value: widget.isDarkMode,
+              onChanged: (v) async {
+                widget.onThemeChanged(v);
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('isDarkMode', v);
+              },
             ),
             const SizedBox(height: 12),
             Expanded(
