@@ -34,10 +34,24 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final seed = Colors.indigo;
     return MaterialApp(
-      title: 'Flutter Task Notes',
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
+      title: 'Task Notes Manager',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
       themeMode: _isDark ? ThemeMode.dark : ThemeMode.light,
       home: HomeScreen(isDarkMode: _isDark, onThemeChanged: _setDark),
     );

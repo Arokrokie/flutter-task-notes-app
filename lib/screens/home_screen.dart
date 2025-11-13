@@ -31,7 +31,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadTasks() async {
     final tasks = await _dbHelper.getTasks();
     setState(() {
-      _tasks = tasks;
+      if (tasks.isEmpty) {
+        _tasks = [
+          TaskItem(
+            title: 'Buy groceries',
+            priority: 'Medium',
+            description: 'Milk, eggs, bread',
+          ),
+          TaskItem(
+            title: 'Read notes',
+            priority: 'Low',
+            description: 'Review lecture notes',
+          ),
+          TaskItem(
+            title: 'Call tutor',
+            priority: 'High',
+            description: 'Discuss assignment 3',
+          ),
+        ];
+      } else {
+        _tasks = tasks;
+      }
     });
   }
 
@@ -43,60 +63,144 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Tasks & Notes')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Text(
-              'Welcome!',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
-          SwitchListTile(
-            title: const Text('Dark Theme'),
-            value: widget.isDarkMode,
-            onChanged: (v) async {
-              widget.onThemeChanged(v);
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isDarkMode', v);
-            },
-          ),
-          Expanded(
-            child: _tasks.isEmpty
-                ? const Center(child: Text('No tasks yet. Use + to add one.'))
-                : ListView.builder(
-                    itemCount: _tasks.length,
-                    itemBuilder: (context, index) {
-                      final t = _tasks[index];
-                      return Dismissible(
-                        key: ValueKey(t.id ?? index),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          color: Colors.red,
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: const Icon(Icons.delete, color: Colors.white),
-                        ),
-                        onDismissed: (_) {
-                          if (t.id != null) _deleteTask(t.id!);
-                        },
-                        child: ListTile(
-                          title: Text(t.title),
-                          subtitle: Text('${t.priority} • ${t.description}'),
-                          trailing: Icon(
-                            t.isCompleted
-                                ? Icons.check_circle
-                                : Icons.circle_outlined,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+      appBar: AppBar(
+        title: const Text('My Tasks & Notes'),
+        centerTitle: true,
+        elevation: 2,
       ),
-      floatingActionButton: FloatingActionButton(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'My Tasks & Notes',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Manage your tasks and quick notes',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                Switch(
+                  value: widget.isDarkMode,
+                  onChanged: (v) async {
+                    widget.onThemeChanged(v);
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('isDarkMode', v);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _tasks.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.note_alt_outlined,
+                            size: 64,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.2),
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'No tasks yet. Click + to add your first task.',
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _tasks.length,
+                      itemBuilder: (context, index) {
+                        final t = _tasks[index];
+                        Color priorityColor;
+                        switch (t.priority.toLowerCase()) {
+                          case 'high':
+                            priorityColor = Colors.red.shade600;
+                            break;
+                          case 'medium':
+                            priorityColor = Colors.orange.shade600;
+                            break;
+                          default:
+                            priorityColor = Colors.green.shade600;
+                        }
+
+                        return Dismissible(
+                          key: ValueKey(t.id ?? index),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            padding: const EdgeInsets.only(right: 20),
+                            alignment: Alignment.centerRight,
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade400,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+                          onDismissed: (_) {
+                            if (t.id != null) _deleteTask(t.id!);
+                          },
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              leading: CircleAvatar(
+                                backgroundColor: priorityColor,
+                                child: Text(
+                                  t.priority.substring(0, 1).toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                t.title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Text(
+                                t.description,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: Checkbox(
+                                value: t.isCompleted,
+                                onChanged: (v) {
+                                  // local toggle only
+                                  setState(() => t.isCompleted = v ?? false);
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final created = await Navigator.push(
             context,
@@ -106,7 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
             await _loadTasks();
           }
         },
-        child: const Icon(Icons.add),
+        label: const Text('Add Task'),
+        icon: const Icon(Icons.add),
       ),
     );
   }
