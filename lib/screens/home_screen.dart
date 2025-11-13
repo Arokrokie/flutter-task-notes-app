@@ -84,9 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icon(
                             Icons.note_alt_outlined,
                             size: 64,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.2),
+                            color: Theme.of(context).colorScheme.primary
+                                .withAlpha((0.2 * 255).round()),
                           ),
                           const SizedBox(height: 12),
                           const Text(

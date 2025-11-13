@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
+import 'helpers/database_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +25,32 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _isDark = widget.initialDarkMode;
+    // print DB contents for verification
+    _printDbContentsOnStartup();
   }
 
   void _setDark(bool v) {
     setState(() {
       _isDark = v;
     });
+  }
+
+  // DEBUG: print database contents on startup (useful to verify persistence)
+  // This runs after the app is initialized.
+  void _printDbContentsOnStartup() async {
+    try {
+      final db = DatabaseHelper();
+      final tasks = await db.getTasks();
+      // Use print so Flutter run shows it in the terminal.
+      debugPrint('DEBUG: Stored tasks (${tasks.length}):');
+      for (final t in tasks) {
+        debugPrint(
+          ' - id=${t.id} title=${t.title} priority=${t.priority} completed=${t.isCompleted}',
+        );
+      }
+    } catch (e) {
+      debugPrint('DEBUG: Could not read tasks from DB: $e');
+    }
   }
 
   @override

@@ -33,6 +33,7 @@ class _FormScreenState extends State<FormScreen> {
     );
 
     await _dbHelper.insertTask(task);
+    if (!mounted) return;
     Navigator.of(context).pop(true);
   }
 
@@ -69,7 +70,7 @@ class _FormScreenState extends State<FormScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _priority,
+                        initialValue: _priority,
                         items: const [
                           DropdownMenuItem(value: 'Low', child: Text('Low')),
                           DropdownMenuItem(
